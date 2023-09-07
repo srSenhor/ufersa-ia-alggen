@@ -15,7 +15,7 @@ inline double f(int x, int y){ return sqrt(pow(x, 3) + 2 * pow(y, 4)); }
 int main(){
 
     //Setando constantes
-    const int NUM_INDIVIDUOS = 8;
+    const int NUM_INDIVIDUOS = 16;
     const float TAXA_MUTACAO = 0.05f;
     const float PRECISAO = 1.0f;
 
@@ -37,13 +37,13 @@ int main(){
 
     for (int i = 0; i < NUM_INDIVIDUOS / 2; i++){
         aval[i] = 1 + f(pop[i][0], pop[i][1]);  //Previnindo que a função de avaliação retorne valores negativos ou nulos, como no exemplo da sala
-        total_aval += aval[i];
+        total_aval += 1 / aval[i]; //Invertendo o valor já que o objetivo é minimizar a função
     }
 
     //Repartindo os pedaços da roleta
     double intervalos_roleta[NUM_INDIVIDUOS / 2]{};
     for (int i = 0; i < NUM_INDIVIDUOS / 2; i++){
-        intervalos_roleta[i] = (aval[i] / total_aval) *  360;   //FIXME: inverter os valores já que se busca minimizar a função
+        intervalos_roleta[i] = ((1.0 / aval[i]) / (total_aval)) *  360;  
         intervalos_roleta[i] = round(intervalos_roleta[i]);     //FIXME: Em alguns casos, os pedaços somam 359. Buscar uma forma de contornar o problema.
     }
     
