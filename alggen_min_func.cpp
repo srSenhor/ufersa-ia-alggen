@@ -53,7 +53,7 @@ int main(){
         intervalos_roleta[i] = round(intervalos_roleta[i]);     //FIXME: Em alguns casos, os pedaços somam 359. Buscar uma forma de contornar o problema.
     }
 
-    //TODO: A partir daqui, encapsule em um laço que realizará os passos seguintes
+    //TODO: A partir daqui, encapsule em um laço. Acho que um do-while dá conta
 
     //Selecionando pais
     int selecionados[NUM_PARES]{};
@@ -69,13 +69,34 @@ int main(){
     }
     
     //Realizando o crossover
-//    crossover(pais, rd);
+    crossover(pais, rd);
 
+    //Reavaliando os indivíduos
+    //TODO: Testar se isso aqui tá funcional
+    total_aval = 0.0;
 
-    //TODO: Escrever o código de reavaliação dos indivíduos. Considerar componentizar o código de avaliação já feito.
+    for (int i = 0; i < NUM_PARES; i++){
+        bitset<6> aux = pais[i] >>= 3;
+        pop[i][0] = aux.to_ulong();
+        
+        aux = (pais[i] <<= 3) >>= 3;
+        pop[i][1] = aux.to_ulong();
+    }
+
+    for (int i = 0; i < NUM_PARES; i++){
+        aval[i] = 1 + f(pop[i][0], pop[i][1]);
+        total_aval += 1 / aval[i]; 
+    }
+
+    //Repartindo os pedaços da roleta de novo
+    for (int i = 0; i < NUM_PARES; i++){
+        intervalos_roleta[i] = ((1.0 / aval[i]) / (total_aval)) *  360;  
+        intervalos_roleta[i] = round(intervalos_roleta[i]);     //FIXME: Em alguns casos, os pedaços somam 359. Buscar uma forma de contornar o problema.
+    }
+
     //TODO: Dar um jeito de pegar o melhor individuo para apresentar graficamente a convergencia
     //TODO: Procurar uma biblioteca para plotar o grafico em cpp. Sugerido o "matplotlib for cpp".  
-
+    //TODO: Limpar e organizar o código.
 
 
     //Visualizando valores
@@ -100,14 +121,6 @@ int main(){
         cout << "Par selecionado: " << pop[selecionados[i]][0] <<  ", " << pop[selecionados[i]][1] << endl << endl;
     }
     cout << endl;
-
-    cout << "Pais selecionados (antes do crossover)" << endl;
-    for (int i = 0; i < NUM_PARES; i++){
-        cout << "Pai " << i << " selecionado: " << pais[i] << endl;
-    }
-    cout << endl;
-
-    crossover(pais, rd);
 
     cout << "Pais selecionados (depois do crossover)" << endl;
     for (int i = 0; i < NUM_PARES; i++) {
