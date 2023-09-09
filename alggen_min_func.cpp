@@ -7,7 +7,7 @@
 using namespace std;
 
  //Setando constantes
-const int NUM_PARES = 8; //Número de individuos
+const int NUM_PARES = 8; //Número de individuos. FIXME: Por ora funciona apenas com pares de pares
 const float TAXA_MUTACAO = 0.05f;
 const float PRECISAO = 1.0f;
 
@@ -17,6 +17,7 @@ inline double f(int x, int y){ return sqrt(pow(x, 3) + 2 * pow(y, 4)); }
 
 int seletorPais(double *, random_device&);
 void crossover(bitset<6>*, random_device&);
+void mutacao(bitset<6>&, random_device&);
 bitset<6> converteBitset(int, int);
 
 //O algoritmo genético binário deve minimizar f(x) com x e y sendo valores no intervalo [0, 7]
@@ -67,9 +68,10 @@ int main(){
         pais[i] = converteBitset(pop[selecionados[i]][0], pop[selecionados[i]][1]);
     }
     
-    //TODO: Escrever o código do crossover dos pais selecionados aleatoriamente com base na roleta
-    //TODO: Escrever o código da mutação dos filhos. 
-    //TODO: Apague os membros da velha geração, mas não sei se são os pais selecionados ou o quê. Método ainda por definir.
+    //Realizando o crossover
+//    crossover(pais, rd);
+
+
     //TODO: Escrever o código de reavaliação dos indivíduos. Considerar componentizar o código de avaliação já feito.
     //TODO: Dar um jeito de pegar o melhor individuo para apresentar graficamente a convergencia
     //TODO: Procurar uma biblioteca para plotar o grafico em cpp. Sugerido o "matplotlib for cpp".  
@@ -99,17 +101,19 @@ int main(){
     }
     cout << endl;
 
-    cout << "Pais selecionados" << endl;
+    cout << "Pais selecionados (antes do crossover)" << endl;
     for (int i = 0; i < NUM_PARES; i++){
         cout << "Pai " << i << " selecionado: " << pais[i] << endl;
     }
     cout << endl;
 
-    // Alguns testes para a visualização do binário
-    /*
-    string binarioString = "11111";
-    cout << "Valor decimal:" << stoi(binarioString, nullptr, 2) << endl;
-    */
+    crossover(pais, rd);
+
+    cout << "Pais selecionados (depois do crossover)" << endl;
+    for (int i = 0; i < NUM_PARES; i++) {
+        cout << "Pai " << i << " selecionado: " << pais[i] << endl;
+    }
+    cout << endl;
 
     return 0;
 }
@@ -145,53 +149,112 @@ bitset<6> converteBitset(int x, int y){
 void crossover(bitset<6> * pais, random_device& rd){
     
     mt19937 mt(rd());
-    uniform_int_distribution<int> bitAlterado(0, 7);
+    uniform_int_distribution<int> bitAlterado(0, 5);
 
     int num;
 
-    for (int i = 0; i < NUM_PARES / 2; i++){
+    for (int i = 0; i < NUM_PARES; i += 2){
         num = bitAlterado(mt);
 
-        //TODO: Encontrar as máscaras certas para realizar o crossover
+        bitset<6> m1[2]{(0), (0)};   //Máscaras do primeiro pai
+        bitset<6> m2[2]{(0), (0)};   //Máscaras do segundo pai
 
         switch (num){
         case 0:
-            /* 
-                bitset<6> mascaraP1(32), mascaraP2(31);
-                mascaraP1 &= pais[i];
-                mascaraP2 &= pais[i + 1];
-
-                pais[i];
-            
-            */
+                m1[0] |= 32, m1[1] |= 31;
+                m2[0] |= 32, m2[1] |= 31;
+                m1[0] &= pais[i];
+                m1[1] &= pais[i];
+                m2[0] &= pais[i + 1];
+                m2[1] &= pais[i + 1];
+                
+                pais[i] = (m1[0] |= m2[1]);
+                pais[i + 1] = (m2[0] |= m1[1]);
+                mutacao(pais[i], rd);
+                mutacao(pais[i + 1], rd);
             break;
         case 1:
-            
+                m1[0] |= 48, m1[1] |= 15;
+                m2[0] |= 48, m2[1] |= 15;
+                m1[0] &= pais[i];
+                m1[1] &= pais[i];
+                m2[0] &= pais[i + 1];
+                m2[1] &= pais[i + 1];
+                
+                pais[i] = (m1[0] |= m2[1]);
+                pais[i + 1] = (m2[0] |= m1[1]);
+                mutacao(pais[i], rd);
+                mutacao(pais[i + 1], rd);
             break;
         case 2:
-            
+                m1[0] |= 56, m1[1] |= 7;
+                m2[0] |= 56, m2[1] |= 7;
+                m1[0] &= pais[i];
+                m1[1] &= pais[i];
+                m2[0] &= pais[i + 1];
+                m2[1] &= pais[i + 1];
+                
+                pais[i] = (m1[0] |= m2[1]);
+                pais[i + 1] = (m2[0] |= m1[1]);
+                mutacao(pais[i], rd);
+                mutacao(pais[i + 1], rd);
             break;
         case 3:
-            
+                m1[0] |= 60, m1[1] |= 3;
+                m2[0] |= 60, m2[1] |= 3;
+                m1[0] &= pais[i];
+                m1[1] &= pais[i];
+                m2[0] &= pais[i + 1];
+                m2[1] &= pais[i + 1];
+                
+                pais[i] = (m1[0] |= m2[1]);
+                pais[i + 1] = (m2[0] |= m1[1]);
+                mutacao(pais[i], rd);
+                mutacao(pais[i + 1], rd);
             break;
         case 4:
-            
+                m1[0] |= 62, m1[1] |= 1;
+                m2[0] |= 62, m2[1] |= 1;
+                m1[0] &= pais[i];
+                m1[1] &= pais[i];
+                m2[0] &= pais[i + 1];
+                m2[1] &= pais[i + 1];
+                
+                pais[i] = (m1[0] |= m2[1]);
+                pais[i + 1] = (m2[0] |= m1[1]);
+                mutacao(pais[i], rd);
+                mutacao(pais[i + 1], rd);
             break;
         case 5:
-            
-            break;
-        case 6:
-            
-            break;
-        case 7:
-            
+                m1[0] |= 63, m1[1] |= 0;
+                m2[0] |= 63, m2[1] |= 0;
+                m1[0] &= pais[i];
+                m1[1] &= pais[i];
+                m2[0] &= pais[i + 1];
+                m2[1] &= pais[i + 1];
+                
+                pais[i] = (m1[0] |= m2[1]);
+                pais[i + 1] = (m2[0] |= m1[1]);
+                mutacao(pais[i], rd);
+                mutacao(pais[i + 1], rd);
             break;
         default:
+            cout << "Algo deu errado no crossover..." << endl;
             break;
         }
-
+        
     }
+}
+
+void mutacao(bitset<6> & individuo, random_device& rd){
     
+    mt19937 mt(rd());
+    uniform_int_distribution<int> mutar(0, 99);
 
-
+    if(mutar(mt) < (TAXA_MUTACAO * 100)){
+        uniform_int_distribution<int> bitAlterado(0, 5);
+        int num = bitAlterado(mt);
+        cout << "Houve mutacao! Individuo " << individuo << " no bit " << num;
+        individuo.flip(num);    //Inverte o bit na posição escolhida, da direita pra esquerda
+    }
 }
