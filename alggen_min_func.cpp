@@ -40,9 +40,16 @@ int main(){
     //Avaliando os indivíduos
     double aval[NUM_PARES]{};
     double total_aval = 0.0;
+    double melhor_aval = 100;   //melhor avaliação da iteração
+    double melhor[2]{}; // melhor individuo
 
     for (int i = 0; i < NUM_PARES; i++){
         aval[i] = 1 + f(pop[i][0], pop[i][1]);  //Previnindo que a função de avaliação retorne valores negativos ou nulos, como no exemplo da sala
+        if(aval[i] < melhor_aval){
+            melhor_aval = aval[i];
+            melhor[0] = pop[i][0];
+            melhor[1] = pop[i][1];
+        }
         total_aval += 1 / aval[i]; //Invertendo o valor já que o objetivo é minimizar a função
     }
 
@@ -53,48 +60,56 @@ int main(){
         intervalos_roleta[i] = round(intervalos_roleta[i]);     //FIXME: Em alguns casos, os pedaços somam 359. Buscar uma forma de contornar o problema.
     }
 
-    //TODO: A partir daqui, encapsule em um laço. Acho que um do-while dá conta
-
-    //Selecionando pais
-    int selecionados[NUM_PARES]{};
-    for (int i = 0; i < NUM_PARES; i++){
-        selecionados[i] = seletorPais(intervalos_roleta, rd);  
-    }
-    
-    //Convertendo para bitset
-    bitset<6> pais[NUM_PARES]{};
-
-    for (int i = 0; i < NUM_PARES; i++){
-        pais[i] = converteBitset(pop[selecionados[i]][0], pop[selecionados[i]][1]);
-    }
-    
-    //Realizando o crossover
-    crossover(pais, rd);
-
-    //Reavaliando os indivíduos
-    //TODO: Testar se isso aqui tá funcional
-    total_aval = 0.0;
-
-    for (int i = 0; i < NUM_PARES; i++){
-        bitset<6> aux = pais[i] >>= 3;
-        pop[i][0] = aux.to_ulong();
+    int i = 0;
+    cout << "Melhor individuo da geracao " << i << ": x = " << melhor[0] << ", y =" << melhor[1] << endl;
+    do{
+        //Selecionando pais
+        int selecionados[NUM_PARES]{};
+        for (int i = 0; i < NUM_PARES; i++){
+            selecionados[i] = seletorPais(intervalos_roleta, rd);  
+        }
         
-        aux = (pais[i] <<= 3) >>= 3;
-        pop[i][1] = aux.to_ulong();
-    }
+        //Convertendo para bitset
+        bitset<6> pais[NUM_PARES]{};
 
-    for (int i = 0; i < NUM_PARES; i++){
-        aval[i] = 1 + f(pop[i][0], pop[i][1]);
-        total_aval += 1 / aval[i]; 
-    }
+        for (int i = 0; i < NUM_PARES; i++){
+            pais[i] = converteBitset(pop[selecionados[i]][0], pop[selecionados[i]][1]);
+        }
+        
+        //Realizando o crossover
+        crossover(pais, rd);
 
-    //Repartindo os pedaços da roleta de novo
-    for (int i = 0; i < NUM_PARES; i++){
-        intervalos_roleta[i] = ((1.0 / aval[i]) / (total_aval)) *  360;  
-        intervalos_roleta[i] = round(intervalos_roleta[i]);     //FIXME: Em alguns casos, os pedaços somam 359. Buscar uma forma de contornar o problema.
-    }
+        //Reavaliando os indivíduos
+        //TODO: Testar se isso aqui tá funcional
+        total_aval = 0.0;
 
-    //TODO: Dar um jeito de pegar o melhor individuo para apresentar graficamente a convergencia
+        for (int i = 0; i < NUM_PARES; i++){
+            bitset<6> aux = pais[i] >>= 3;
+            pop[i][0] = aux.to_ulong();
+            
+            aux = (pais[i] <<= 3) >>= 3;
+            pop[i][1] = aux.to_ulong();
+        }
+
+        for (int i = 0; i < NUM_PARES; i++){
+            aval[i] = 1 + f(pop[i][0], pop[i][1]);
+            if(aval[i] < melhor_aval){
+                melhor_aval = aval[i];
+                melhor[0] = pop[i][0];
+                melhor[1] = pop[i][1];
+            }
+            total_aval += 1 / aval[i]; 
+        }
+
+        //Repartindo os pedaços da roleta de novo
+        for (int i = 0; i < NUM_PARES; i++){
+            intervalos_roleta[i] = ((1.0 / aval[i]) / (total_aval)) *  360;  
+            intervalos_roleta[i] = round(intervalos_roleta[i]);     //FIXME: Em alguns casos, os pedaços somam 359. Buscar uma forma de contornar o problema.
+        }
+        i++;
+        cout << "Melhor individuo da geracao " << i << ": x = " << melhor[0] << ", y =" << melhor[1] << endl;
+    } while(melhor_aval > 0.1 && i < 8);
+    
     //TODO: Procurar uma biblioteca para plotar o grafico em cpp. Sugerido o "matplotlib for cpp".  
     //TODO: Limpar e organizar o código.
 
@@ -102,31 +117,13 @@ int main(){
     //Visualizando valores
     cout << "Populacao de individuos" << endl;
     for (int i = 0; i < NUM_PARES; i++)
-        cout << "X: " << pop[i][0] << ", Y:" << pop[i][1] << endl;
+        cout << "X: " << pop[i][0] << ", Y: " << pop[i][1] << endl;
     cout << endl;
 
     cout << "Avaliacao dos individuos sob f(x,y)" << endl;
     for (int i = 0; i < NUM_PARES; i++)
         cout << i + 1 << ":" << aval[i] << endl;
     cout << "Total: " << total_aval << endl << endl;
-
-    cout << "Parte da roleta (inicia em 0)" << endl;
-    for (int i = 0; i < NUM_PARES; i++)
-        cout << i + 1 << ":" << intervalos_roleta[i] <<  " pedacos posteriores" << endl;
-    cout << endl;
-
-    cout << "Pares selecionados" << endl;
-    for (int i = 0; i < NUM_PARES; i++){
-        cout << "Numero selecionado: " << selecionados[i] << endl;
-        cout << "Par selecionado: " << pop[selecionados[i]][0] <<  ", " << pop[selecionados[i]][1] << endl << endl;
-    }
-    cout << endl;
-
-    cout << "Pais selecionados (depois do crossover)" << endl;
-    for (int i = 0; i < NUM_PARES; i++) {
-        cout << "Pai " << i << " selecionado: " << pais[i] << endl;
-    }
-    cout << endl;
 
     return 0;
 }
@@ -267,7 +264,6 @@ void mutacao(bitset<6> & individuo, random_device& rd){
     if(mutar(mt) < (TAXA_MUTACAO * 100)){
         uniform_int_distribution<int> bitAlterado(0, 5);
         int num = bitAlterado(mt);
-        cout << "Houve mutacao! Individuo " << individuo << " no bit " << num;
         individuo.flip(num);    //Inverte o bit na posição escolhida, da direita pra esquerda
     }
 }
