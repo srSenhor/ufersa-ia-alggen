@@ -82,7 +82,7 @@ int main(){
         //Reavaliando os indivíduos
         //TODO: Testar se isso aqui tá funcional
         total_aval = 0.0;
-
+        /*
         for (int i = 0; i < NUM_PARES; i++){
             bitset<6> aux = pais[i] >>= 3;
             pop[i][0] = aux.to_ulong();
@@ -90,6 +90,16 @@ int main(){
             aux = (pais[i] <<= 3) >>= 3;
             pop[i][1] = aux.to_ulong();
         }
+        */
+
+        for (int i = 0; i < NUM_PARES; i++){
+            bitset<6> aux_x = (pais[i] >>= 3);
+            bitset<6> aux_y = (pais[i] &= bitset<6>("000111"));
+            
+            pop[i][0] = aux_x.to_ulong();
+            pop[i][1] = aux_y.to_ulong();
+        }
+
 
         for (int i = 0; i < NUM_PARES; i++){
             aval[i] = 1 + f(pop[i][0], pop[i][1]);
