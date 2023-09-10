@@ -1,7 +1,8 @@
 import random
 import math
+import matplotlib.pyplot as plt
 
-# Defina a função de aptidão (fitness)
+# Função de aptidão (fitness)
 def fitness(x, y):
     return math.sqrt(x**3 + 2*y**4)
 
@@ -17,7 +18,11 @@ def cromossomo_para_xy(cromossomo):
     y = int(cromossomo_y, 2)
     return x, y
 
-# Crie uma função para inicializar a população de indivíduos
+# Função para converter um valor de x ou y em binário de 3 bits
+def valor_para_binario(valor):
+    return decimal_para_binario(valor).zfill(3)
+
+# Inicialização da população de indivíduos
 def inicializar_populacao(pop_size, gene_length):
     populacao = []
     for _ in range(pop_size):
@@ -25,7 +30,7 @@ def inicializar_populacao(pop_size, gene_length):
         populacao.append(cromossomo)
     return populacao
 
-# Crie uma função para calcular o fitness de cada indivíduo na população
+# Cálculo do fitness de cada indivíduo na população
 def calcular_fitness_populacao(populacao):
     fitness_populacao = []
     for cromossomo in populacao:
@@ -34,7 +39,7 @@ def calcular_fitness_populacao(populacao):
         fitness_populacao.append(aptidao)
     return fitness_populacao
 
-# Crie uma função para selecionar indivíduos para cruzamento com base na roleta
+# Seleção de pares com base na roleta
 def selecao(populacao, fitness_populacao, num_selecionados):
     selecionados = []
     total_fitness = sum(fitness_populacao)
@@ -48,14 +53,14 @@ def selecao(populacao, fitness_populacao, num_selecionados):
                 break
     return selecionados
 
-# Crie uma função para realizar o cruzamento (crossover) entre dois pais
+# Cruzamento (crossover) entre dois pais
 def crossover(pai1, pai2):
     ponto_corte = random.randint(1, len(pai1) - 1)
     filho1 = pai1[:ponto_corte] + pai2[ponto_corte:]
     filho2 = pai2[:ponto_corte] + pai1[ponto_corte:]
     return filho1, filho2
 
-# Crie uma função para realizar a mutação em um cromossomo
+# Mutação em um cromossomo
 def mutacao(cromossomo, taxa_mutacao):
     cromossomo_mutado = ''
     for bit in cromossomo:
@@ -65,27 +70,23 @@ def mutacao(cromossomo, taxa_mutacao):
             cromossomo_mutado += bit
     return cromossomo_mutado
 
-# Defina hiperparâmetros
+# Parâmetros do algoritmo
 populacao_tamanho = 8
 gene_length = 6  # 3 bits para x, 3 bits para y
 taxa_crossover = 0.7
 taxa_mutacao = 0.1
 geracoes = 10
 
-# Inicialize a população
+# Inicialização da população
 populacao = inicializar_populacao(populacao_tamanho, gene_length)
 
-# Execute o algoritmo genético por um número fixo de gerações
-for geracao in range(geracoes):
-    # Calcule o fitness da população atual
-    fitness_populacao = calcular_fitness_populacao(populacao)
+# Lista para acompanhar a convergência do algoritmo
+melhores_fitness = []
 
-    # Imprima todos os indivíduos da geração atual
-    print(f'Geração {geracao + 1}:')
-    for i, cromossomo in enumerate(populacao):
-        x, y = cromossomo_para_xy(cromossomo)
-        resultado = fitness(x, y)
-        print(f'Indivíduo {i + 1}: x={x}, y={y}, f(x, y)={resultado}')
+# Execução do algoritmo genético por um número fixo de gerações
+for geracao in range(geracoes):
+    # Cálculo do fitness da população atual
+    fitness_populacao = calcular_fitness_populacao(populacao)
 
     # Encontre o melhor indivíduo da geração atual
     melhor_indice = fitness_populacao.index(max(fitness_populacao))
@@ -93,7 +94,17 @@ for geracao in range(geracoes):
     x, y = cromossomo_para_xy(melhor_cromossomo)
     resultado = fitness(x, y)
 
-    # Imprima o resultado da melhor solução da geração atual
+    # Adicione o melhor fitness à lista de convergência
+    melhores_fitness.append(resultado)
+
+    # Imprima a população da geração atual
+    print(f'Geração {geracao + 1}:')
+    for i, cromossomo in enumerate(populacao):
+        x, y = cromossomo_para_xy(cromossomo)
+        resultado = fitness(x, y)
+        print(f'Indivíduo {i + 1}: x={x}, y={y}, f(x, y)={resultado}, Representação Binária: {cromossomo}')
+
+    # Imprima o melhor indivíduo da geração atual
     print(f'Melhor solução - x={x}, y={y}, f(x, y)={resultado}')
 
     # Selecione indivíduos para cruzamento
@@ -122,4 +133,11 @@ resultado = fitness(x, y)
 print("\nMelhor solução encontrada:")
 print(f"x={x}, y={y}, f(x, y)={resultado}")
 
-
+# Plotar gráfico de convergência
+plt.figure()
+plt.plot(melhores_fitness)
+plt.xlabel('Gerações')
+plt.ylabel('Melhor Fitness')
+plt.title('Convergência do Algoritmo Genético')
+plt.grid()
+plt.show()
