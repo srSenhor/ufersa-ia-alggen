@@ -22,7 +22,7 @@ bitset<6> converteBitset(int, int);
 
 //O algoritmo genético binário deve minimizar f(x) com x e y sendo valores no intervalo [0, 7]
 //Serão 3 bits para cada entrada.
-int main() {
+int main1() {
 
     //Setando seed para criação de números aleatórios
     random_device rd;

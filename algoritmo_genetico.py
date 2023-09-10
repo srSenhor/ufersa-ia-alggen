@@ -24,28 +24,20 @@ def valor_para_binario(valor):
 
 # Inicialização da população de indivíduos
 def inicializar_populacao(pop_size, gene_length):
-    populacao = []
-    for _ in range(pop_size):
-        cromossomo = ''.join([str(random.randint(0, 1)) for _ in range(gene_length)])
-        populacao.append(cromossomo)
+    populacao = [''.join([str(random.randint(0, 1)) for _ in range(gene_length)]) for _ in range(pop_size)]
     return populacao
 
 # Cálculo do fitness de cada indivíduo na população
 def calcular_fitness_populacao(populacao):
-    fitness_populacao = []
-    for cromossomo in populacao:
-        x, y = cromossomo_para_xy(cromossomo)
-        aptidao = fitness(x, y)
-        fitness_populacao.append(aptidao)
-    return fitness_populacao
+    return [fitness(*cromossomo_para_xy(cromossomo)) for cromossomo in populacao]
 
 # Seleção de pares com base na roleta
 def selecao(populacao, fitness_populacao, num_selecionados):
-    selecionados = []
     total_fitness = sum(fitness_populacao)
+    selecionados = []
     while len(selecionados) < num_selecionados:
-        acumulado = 0
         r = random.uniform(0, total_fitness)
+        acumulado = 0
         for i, aptidao in enumerate(fitness_populacao):
             acumulado += aptidao
             if acumulado >= r:
@@ -62,13 +54,77 @@ def crossover(pai1, pai2):
 
 # Mutação em um cromossomo
 def mutacao(cromossomo, taxa_mutacao):
-    cromossomo_mutado = ''
-    for bit in cromossomo:
-        if random.random() < taxa_mutacao:
-            cromossomo_mutado += '1' if bit == '0' else '0'
-        else:
-            cromossomo_mutado += bit
+    cromossomo_mutado = ''.join(['1' if bit == '0' and random.random() < taxa_mutacao else
+                                 '0' if bit == '1' and random.random() < taxa_mutacao else bit for bit in cromossomo])
     return cromossomo_mutado
+
+# Algoritmo Genético
+def algoritmo_genetico(populacao_tamanho, gene_length, taxa_crossover, taxa_mutacao, geracoes):
+    populacao = inicializar_populacao(populacao_tamanho, gene_length)
+    melhores_fitness = []
+    melhores_individuos = []
+
+    for geracao in range(geracoes):
+        fitness_populacao = calcular_fitness_populacao(populacao)
+
+        # Encontre o melhor indivíduo da geração atual
+        melhor_indice = fitness_populacao.index(max(fitness_populacao))
+        melhor_cromossomo = populacao[melhor_indice]
+        x, y = cromossomo_para_xy(melhor_cromossomo)
+        resultado = fitness(x, y)
+
+        # Adicione o melhor fitness e o melhor indivíduo à lista de convergência
+        melhores_fitness.append(resultado)
+        melhores_individuos.append(melhor_cromossomo)
+
+        # Imprima a população da geração atual
+        print(f'Geração {geracao + 1}:')
+        for i, cromossomo in enumerate(populacao):
+            x, y = cromossomo_para_xy(cromossomo)
+            resultado = fitness(x, y)
+            print(f'Indivíduo {i + 1}({cromossomo}): x={x}, y={y}, f(x, y)={resultado}')
+
+        # Imprima o melhor indivíduo da geração atual
+        print(f'Melhor solução da geração {geracao + 1} - x={x}, y={y}, f(x, y)={resultado}')
+
+        # Selecione indivíduos para cruzamento
+        selecionados = selecao(populacao, fitness_populacao, populacao_tamanho)
+
+        # Realize o crossover para criar a próxima geração
+        nova_populacao = []
+        while len(nova_populacao) < populacao_tamanho:
+            pai1, pai2 = random.sample(selecionados, 2)
+            filho1, filho2 = crossover(pai1, pai2)
+            filho1 = mutacao(filho1, taxa_mutacao)
+            filho2 = mutacao(filho2, taxa_mutacao)
+            nova_populacao.extend([filho1, filho2])
+
+        # Atualize a população para a próxima geração
+        populacao = nova_populacao
+
+    # Encontre o melhor indivíduo de toda a execução
+    fitness_populacao = calcular_fitness_populacao(populacao)
+    melhor_indice = fitness_populacao.index(max(fitness_populacao))
+    melhor_cromossomo = populacao[melhor_indice]
+    x, y = cromossomo_para_xy(melhor_cromossomo)
+    resultado = fitness(x, y)
+
+    # Adicione o melhor fitness e o melhor indivíduo à lista de convergência
+    melhores_fitness.append(resultado)
+    melhores_individuos.append(melhor_cromossomo)
+
+    # Imprima o resultado da melhor solução encontrada
+    print("\nMelhor solução encontrada:")
+    print(f"x={x}, y={y}, f(x, y)={resultado}")
+
+    # Plotar gráfico de convergência
+    plt.figure()
+    plt.plot(melhores_fitness)
+    plt.xlabel('Gerações')
+    plt.ylabel('Melhor Fitness')
+    plt.title('Convergência do Algoritmo Genético')
+    plt.grid()
+    plt.show()
 
 # Parâmetros do algoritmo
 populacao_tamanho = 8
@@ -77,67 +133,5 @@ taxa_crossover = 0.7
 taxa_mutacao = 0.1
 geracoes = 10
 
-# Inicialização da população
-populacao = inicializar_populacao(populacao_tamanho, gene_length)
-
-# Lista para acompanhar a convergência do algoritmo
-melhores_fitness = []
-
-# Execução do algoritmo genético por um número fixo de gerações
-for geracao in range(geracoes):
-    # Cálculo do fitness da população atual
-    fitness_populacao = calcular_fitness_populacao(populacao)
-
-    # Encontre o melhor indivíduo da geração atual
-    melhor_indice = fitness_populacao.index(max(fitness_populacao))
-    melhor_cromossomo = populacao[melhor_indice]
-    x, y = cromossomo_para_xy(melhor_cromossomo)
-    resultado = fitness(x, y)
-
-    # Adicione o melhor fitness à lista de convergência
-    melhores_fitness.append(resultado)
-
-    # Imprima a população da geração atual
-    print(f'Geração {geracao + 1}:')
-    for i, cromossomo in enumerate(populacao):
-        x, y = cromossomo_para_xy(cromossomo)
-        resultado = fitness(x, y)
-        print(f'Indivíduo {i + 1}: x={x}, y={y}, f(x, y)={resultado}, Representação Binária: {cromossomo}')
-
-    # Imprima o melhor indivíduo da geração atual
-    print(f'Melhor solução - x={x}, y={y}, f(x, y)={resultado}')
-
-    # Selecione indivíduos para cruzamento
-    selecionados = selecao(populacao, fitness_populacao, populacao_tamanho)
-
-    # Realize o crossover para criar a próxima geração
-    nova_populacao = []
-    while len(nova_populacao) < populacao_tamanho:
-        pai1, pai2 = random.sample(selecionados, 2)
-        filho1, filho2 = crossover(pai1, pai2)
-        filho1 = mutacao(filho1, taxa_mutacao)
-        filho2 = mutacao(filho2, taxa_mutacao)
-        nova_populacao.extend([filho1, filho2])
-
-    # Atualize a população para a próxima geração
-    populacao = nova_populacao
-
-# Encontre o melhor indivíduo de toda a execução
-fitness_populacao = calcular_fitness_populacao(populacao)
-melhor_indice = fitness_populacao.index(max(fitness_populacao))
-melhor_cromossomo = populacao[melhor_indice]
-x, y = cromossomo_para_xy(melhor_cromossomo)
-resultado = fitness(x, y)
-
-# Imprima o resultado da melhor solução encontrada
-print("\nMelhor solução encontrada:")
-print(f"x={x}, y={y}, f(x, y)={resultado}")
-
-# Plotar gráfico de convergência
-plt.figure()
-plt.plot(melhores_fitness)
-plt.xlabel('Gerações')
-plt.ylabel('Melhor Fitness')
-plt.title('Convergência do Algoritmo Genético')
-plt.grid()
-plt.show()
+# Executar o Algoritmo Genético
+algoritmo_genetico(populacao_tamanho, gene_length, taxa_crossover, taxa_mutacao, geracoes)
