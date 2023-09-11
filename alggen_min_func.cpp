@@ -1,5 +1,4 @@
 #include <iostream>
-#include <string>
 #include <cmath>
 #include <bitset> //Sugestão para visualizar binário
 #include <random>
@@ -8,8 +7,8 @@ using namespace std;
 
  //Setando constantes
 const int NUM_PARES = 8; //Número de individuos. FIXME: Por ora funciona apenas com pares de pares
+const int MAX_ITERACOES = 100;
 const float TAXA_MUTACAO = 0.05f;
-const float PRECISAO = 1.0f;
 
 
 //Função usada: raizquadrada(x^3 + 2*(y^4))
@@ -82,15 +81,6 @@ int main(){
         //Reavaliando os indivíduos
         //TODO: Testar se isso aqui tá funcional
         total_aval = 0.0;
-        /*
-        for (int i = 0; i < NUM_PARES; i++){
-            bitset<6> aux = pais[i] >>= 3;
-            pop[i][0] = aux.to_ulong();
-            
-            aux = (pais[i] <<= 3) >>= 3;
-            pop[i][1] = aux.to_ulong();
-        }
-        */
 
         for (int i = 0; i < NUM_PARES; i++){
             bitset<6> aux_x = (pais[i] >>= 3);
@@ -118,7 +108,7 @@ int main(){
         }
         i++;
         cout << "Melhor individuo da geracao " << i << ": x = " << melhor[0] << ", y =" << melhor[1] << endl;
-    } while(melhor_aval > 0.1 && i < 8);
+    } while(melhor_aval > 1.0 && i < MAX_ITERACOES);
     
     //TODO: Procurar uma biblioteca para plotar o grafico em cpp. Sugerido o "matplotlib for cpp".  
     //TODO: Limpar e organizar o código.
