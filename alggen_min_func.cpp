@@ -3,6 +3,7 @@
 #include <bitset> //Sugestão para visualizar binário
 #include <random>
 
+
 using namespace std;
 
  //Setando constantes
@@ -60,7 +61,20 @@ int main(){
     }
 
     int i = 0;
+
+    //Visualizando valores
+    cout << "Populacao de individuos" << endl;
+    for (int i = 0; i < NUM_PARES; i++)
+        cout << "X: " << pop[i][0] << ", Y: " << pop[i][1] << endl;
+    cout << endl;
+
+    cout << "Avaliacao dos individuos sob f(x,y)" << endl;
+    for (int i = 0; i < NUM_PARES; i++)
+        cout << i + 1 << ":" << aval[i] << endl;
+    cout << "Total: " << total_aval << endl << endl;
+
     cout << "Melhor individuo da geracao " << i << ": x = " << melhor[0] << ", y =" << melhor[1] << endl;
+    cout << "------------------------------------------------------" << endl;
     do{
         //Selecionando pais
         int selecionados[NUM_PARES]{};
@@ -107,23 +121,28 @@ int main(){
             intervalos_roleta[i] = round(intervalos_roleta[i]);     //FIXME: Em alguns casos, os pedaços somam 359. Buscar uma forma de contornar o problema.
         }
         i++;
+
+        //Visualizando valores
+        cout << "Populacao de individuos" << endl;
+        for (int i = 0; i < NUM_PARES; i++)
+            cout << "X: " << pop[i][0] << ", Y: " << pop[i][1] << endl;
+        cout << endl;
+
+        cout << "Avaliacao dos individuos sob f(x,y)" << endl;
+        for (int i = 0; i < NUM_PARES; i++)
+            cout << i + 1 << ":" << aval[i] << endl;
+        cout << "Total: " << total_aval << endl << endl;
+
+
         cout << "Melhor individuo da geracao " << i << ": x = " << melhor[0] << ", y =" << melhor[1] << endl;
+        cout << "------------------------------------------------------" << endl;
     } while(melhor_aval > 1.0 && i < MAX_ITERACOES);
     
     //TODO: Procurar uma biblioteca para plotar o grafico em cpp. Sugerido o "matplotlib for cpp".  
     //TODO: Limpar e organizar o código.
 
 
-    //Visualizando valores
-    cout << "Populacao de individuos" << endl;
-    for (int i = 0; i < NUM_PARES; i++)
-        cout << "X: " << pop[i][0] << ", Y: " << pop[i][1] << endl;
-    cout << endl;
-
-    cout << "Avaliacao dos individuos sob f(x,y)" << endl;
-    for (int i = 0; i < NUM_PARES; i++)
-        cout << i + 1 << ":" << aval[i] << endl;
-    cout << "Total: " << total_aval << endl << endl;
+ 
 
     return 0;
 }
